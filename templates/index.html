@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Version</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'plugin/json_load/json-viewer.css' %}">
+  <link rel="stylesheet" href="{% static 'css/mycss.css' %}">
+  <script src="{% static 'js/jquery.min.js' %}"></script>
+  <!-- if the local jquery is not working, add the global jquery link 
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+   -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <script  type="text/javascript" src="{% static 'plugin/json_load/json-viewer.js' %}"></script>
+</head>
+<body class=' background-grey'>
+
+<div class="jumbotron text-center">
+  <h2>Detect Text Demo</h2>
+</div>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-1"></div>
+    <div class="col-sm-5">
+        <div class='display-inline'>
+            <div class="thumbnail-images" >
+                <img src="{% static 'images/demo.png' %}" class="thumb-active">
+            </div>
+            <div class="image-galleris" style="width: 80%;">
+                <img src="{% static 'images/demo.png' %}" class='gallery-active'>
+                <img id="blah" src="#" alt="your image" class="gallery-deactive"/>
+            </div>
+        </div>
+        <div class='padding-5'>
+            <p>Support picture format: .bmp, .jpg, .png, picture size after Base64≤2M</p>
+        </div>
+        <div class='option-menu'>
+            <form method='POST' enctype='multipart/form-data'>
+                <div class="upload-btn-wrapper">
+                    <button class="btn-custom">Upload</button>
+                    <input type="file" name="myfile" id='upload-image' accept="image/*" />
+                </div>
+            </form>
+
+        </div>
+    </div>
+    <div class="col-sm-5" style='background-color:azure;'>
+        <div style='margin:10px 0px; background-color:white; height: 700px;'>
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#home">Text Result</a></li>
+                <li><a href="#menu1">Json</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div id="home" class="tab-pane fade in active">
+                    <br>
+                    <h4>Text Result</h4>
+                    <div id='table-data'></div>
+                    <div class='loading text-center margin-top-40' style='margin-top:80px; display:none;'>
+                        <img src="{% static 'img/loading.gif' %}" width=32>
+                    </div>
+                </div>
+                <div id="menu1" class="tab-pane fade">
+                <br>
+                    <h4>Json</h4>
+                    <div id="json"></div>
+                    <div class='loading text-center margin-top-40' style='margin-top:80px; display:none;'>
+                        <img src="{% static 'img/loading.gif' %}" width=32>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+
+</body>
+<script>
+     $.ajaxSetup({
+         headers: { "X-CSRFToken": '{{csrf_token}}' }
+     });
+     get_detection_data = "{% url 'get_detection_data' %}";
+     image_upload = "{% url 'image_upload' %}"
+</script>
+<script src="{% static 'js/my.js' %}"></script>
+
+</html>

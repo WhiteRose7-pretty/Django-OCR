@@ -1,0 +1,6 @@
+- create virtualenv in root directory.
+- install tesseract in the pc.
+- link the tesseract exe file
+- open the root folder 
+- pip install -r requirement.txt
+- python manage.py run

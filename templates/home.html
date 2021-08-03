@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Test Version</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/mycss.css' %}">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div class="jumbotron text-center">
+  <h2>Django-python page</h2>
+  <p>This is the dection letters from image</p> 
+</div>
+  
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-6 background-grey">
+        <div class='display-inline'>
+            <div class="thumbnail-images">
+                <img src="{% static 'images/111.jpg' %}" class="thumb-active">
+                <img src="{% static 'images/111.jpg' %}">
+                <img src="{% static 'images/11.jpg' %}">
+                <img src="{% static 'images/21.jpg' %}">
+            </div>
+            <div class="image-galleris">
+                <img src="{% static 'images/111.jpg' %}" class='gallery-active'>
+                <img src="{% static 'images/111.jpg' %}" class="gallery-deactive">
+                <img src="{% static 'images/11.jpg' %}" class="gallery-deactive">
+                <img src="{% static 'images/21.jpg' %}" class="gallery-deactive">
+                <img id="blah" src="#" alt="your image" class="gallery-deactive"/>
+            </div>
+        </div>
+        <div class='padding-5'>
+            <p>Support picture format: .bmp, .jpg, .png, picture size after Base64≤2M</p>
+        </div>
+        <div class='option-menu'>
+            <select style='border-radius:6px; height:36px;border:none;'>
+                <option>auto resize</option>
+            </select>
+            <form method='POST' enctype='multipart/form-data'>
+                <div class="upload-btn-wrapper">
+                    <button class="btn-custom">Upload</button>
+                    <input type="file" name="myfile" id='upload-image' accept="image/*" />
+                </div>
+            </form>
+            <form method='POST' enctype='multipart/form-data' style="width:100%;">
+                <div class="input-group" style="width:100%;">
+                    <input type="text" class="form-control" placeholder="Search" style="border:none;" name='search-image'>
+                    <img id="myImage" src="#" crossOrigin="anonymous" style='display:none;'>
+                    <div class="input-group-btn" style="border:none;">
+                        <button class="btn btn-default" type="button" style="border:none;">
+                            <i class="glyphicon glyphicon-search" id='check-image'></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <ul class="nav nav-tabs">
+            <li class="active"><a href="#home">Text Result</a></li>
+            <li><a href="#menu1">Json</a></li>
+        </ul>
+
+        <div class="tab-content">
+            <div id="home" class="tab-pane fade in active">
+                <br>
+                <h4>Text Result</h4>
+                <div id='table-data'></div>
+                <div class='loading text-center margin-top-40' style='margin-top:80px; display:none;'>
+                    <img src="{% static 'img/loading.gif' %}" width=32>
+                </div>
+            </div>
+            <div id="menu1" class="tab-pane fade">
+            <br>
+                <h4>Json</h4>
+                <div id='json-data'></div>
+                <div class='loading text-center margin-top-40' style='margin-top:80px; display:none;'>
+                    <img src="{% static 'img/loading.gif' %}" width=32>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+
+</body>
+<script>
+     $.ajaxSetup({
+         headers: { "X-CSRFToken": '{{csrf_token}}' }
+     });
+     get_detection_data = "{% url 'get_detection_data' %}";
+     image_upload = "{% url 'image_upload' %}"
+</script>
+<script src="{% static 'js/my.js' %}"></script>
+</html>
