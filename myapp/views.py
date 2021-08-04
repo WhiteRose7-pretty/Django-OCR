@@ -10,7 +10,8 @@ import numpy as np
 from imutils.object_detection import non_max_suppression
 import pytesseract
 from pytesseract import Output
-pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
+
+pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
 tessdata_dir_config = r'--oem 1 --psm 6 --tessdata-dir "exam\\"'
 import json
 
@@ -20,14 +21,17 @@ def index(request):
     # result = detect_text(filepath)
     return render(request, "index.html", {})
 
+
 def detection(request):
     # filepath = 'static/images/001.png'
     # result = detect_text(filepath)
     return render(request, "index.html", {})
 
+
 # Create your views here.
 def home(request):
     return render(request, "home.html", {})
+
 
 def getData(request):
     st_time = int(round(time.time() * 1000))
@@ -40,17 +44,21 @@ def getData(request):
     # print(result)
     # re = json.dump(result)
     # print(re)
-    print(int(round(time.time() * 1000))-st_time)
-    return JsonResponse({'status': 1, 'data':result})
+    print(int(round(time.time() * 1000)) - st_time)
+    return JsonResponse({'status': 1, 'data': result})
+
 
 def sort_x(rect):
     return rect[0]
 
+
 def sort_y(rect):
     return rect[1]
 
+
 def sort_line(line):
     return line[0][1]
+
 
 def get_digit(text):
     num = ''
@@ -61,89 +69,89 @@ def get_digit(text):
             break
     return num
 
+
 # image dection function
 def detect_number(filepath):
     image = cv2.imread(filepath)
     if image is None:
         return 'Invalid iamge'
-    try:
-        res = ''
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        h_img, w_img = gray.shape[:2]
-        gray_re = cv2.resize(gray, (w_img * 3, h_img * 3))
-        blurred = cv2.GaussianBlur(gray_re, (9, 9), 0)
-        # Adaptive threshold using 11 nearest neighbour pixels
-        # imgbin = cv2.threshold(gray, 0, 150, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
-        img_bin = cv2.adaptiveThreshold(blurred, 255,
-                                        cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 21, 10)
-        # cv2.imshow('img_gray', img_bin)
-        # cv2.waitKey(0)
 
-        contours, hierarchy = cv2.findContours(img_bin, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-        # cv2.imshow('img_time', img_dilate)
-        # cv2.waitKey(0)
+    res = ''
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    h_img, w_img = gray.shape[:2]
+    gray_re = cv2.resize(gray, (w_img * 3, h_img * 3))
+    blurred = cv2.GaussianBlur(gray_re, (9, 9), 0)
+    # Adaptive threshold using 11 nearest neighbour pixels
+    # imgbin = cv2.threshold(gray, 0, 150, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+    img_bin = cv2.adaptiveThreshold(blurred, 255,
+                                    cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 21, 10)
+    # cv2.imshow('img_gray', img_bin)
+    # cv2.waitKey(0)
 
-        # get the candinate regions of text line.
-        rect_roi = []
-        for c in contours:
-            x, y, w, h = cv2.boundingRect(c)
-            if w > 54 and w < 68 and h > 54 and h < 68:
-                rect_roi.append((x, y, w, h))
-                # cv2.rectangle(gray_re, (x, y), (x + w, y + h), (192, 192, 192), 2)
-            # if 2 * (y + h) < h_img:
-            #     continue
-            # if w > 30 and w < 110 and h > 10 and h < 30:
-            #     rect_roi.append((x, y, w, h))
-            #     cv2.rectangle(gray, (x, y), (x + w, y + h), (192, 192, 192), 2)
+    contours, hierarchy = cv2.findContours(img_bin, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+    # cv2.imshow('img_time', img_dilate)
+    # cv2.waitKey(0)
 
-        rect_roi = sorted(rect_roi, key=sort_x)
+    # get the candinate regions of text line.
+    rect_roi = []
+    for c in contours:
+        x, y, w, h = cv2.boundingRect(c)
+        if w > 54 and w < 68 and h > 54 and h < 68:
+            rect_roi.append((x, y, w, h))
+            # cv2.rectangle(gray_re, (x, y), (x + w, y + h), (192, 192, 192), 2)
+        # if 2 * (y + h) < h_img:
+        #     continue
+        # if w > 30 and w < 110 and h > 10 and h < 30:
+        #     rect_roi.append((x, y, w, h))
+        #     cv2.rectangle(gray, (x, y), (x + w, y + h), (192, 192, 192), 2)
 
-        lines = []
-        len_rts = len(rect_roi)
-        bover = [False] * len_rts
-        for i in range(0, len_rts):
-            if bover[i]:
+    rect_roi = sorted(rect_roi, key=sort_x)
+
+    lines = []
+    len_rts = len(rect_roi)
+    bover = [False] * len_rts
+    for i in range(0, len_rts):
+        if bover[i]:
+            continue
+        (xi, yi, wi, hi) = rect_roi[i]
+        # cv2.rectangle(gray_re, (xi, yi), (xi + wi, yi + hi), (192, 192, 192), 2)
+        line = []
+        line.append((xi, yi, wi, hi))
+        bover[i] = True
+        for j in range(i + 1, len(rect_roi)):
+            if bover[j]:
                 continue
-            (xi, yi, wi, hi) = rect_roi[i]
-            # cv2.rectangle(gray_re, (xi, yi), (xi + wi, yi + hi), (192, 192, 192), 2)
-            line = []
-            line.append((xi, yi, wi, hi))
-            bover[i] = True
-            for j in range(i + 1, len(rect_roi)):
-                if bover[j]:
-                    continue
-                (xj, yj, wj, hj) = rect_roi[j]
-                if abs(yi - yj) < min(hi, hj):
-                    line.append((xj, yj, wj, hj))
-                    bover[j] = True
-                    # cv2.rectangle(gray_re, (xj, yj), (xj + wj, yj + hj), (192, 192, 192), 2)
+            (xj, yj, wj, hj) = rect_roi[j]
+            if abs(yi - yj) < min(hi, hj):
+                line.append((xj, yj, wj, hj))
+                bover[j] = True
+                # cv2.rectangle(gray_re, (xj, yj), (xj + wj, yj + hj), (192, 192, 192), 2)
 
-            lines.append(line)
-            # cv2.imshow('img_gray', gray_re)
-            # cv2.waitKey(0)
+        lines.append(line)
+        # cv2.imshow('img_gray', gray_re)
+        # cv2.waitKey(0)
 
-        # print('line number : ' + str(len(lines)))
-        lines = sorted(lines, key=sort_line)
-        len_lines = len(lines)
-        for i in range(0, len_lines):
-            line = lines[len_lines - i - 1]
-            len_rts = len(line)
+    # print('line number : ' + str(len(lines)))
+    lines = sorted(lines, key=sort_line)
+    len_lines = len(lines)
+    for i in range(0, len_lines):
+        line = lines[len_lines - i - 1]
+        len_rts = len(line)
 
-            for j in range(0, len_rts):
-                (x, y, w, h) = line[len_rts - j - 1]
-                img_crop = gray_re[y:y + h, x:x + w]
-                # cv2.imwrite(dir_name + filename, img_crop)
-                img_inv = 255 - img_crop
-                text = pytesseract.image_to_string(img_inv, lang='eng', config=tessdata_dir_config, output_type=Output.DICT)
-                print("text", text)
-                num = get_digit(text['text'])
-                if len(num) > 0:
-                    res = res + num + ' '
-                print("num", num)
-        print(res)
-        return res
-    except:
-        return 'Wrong image'
+        for j in range(0, len_rts):
+            (x, y, w, h) = line[len_rts - j - 1]
+            img_crop = gray_re[y:y + h, x:x + w]
+            # cv2.imwrite(dir_name + filename, img_crop)
+            img_inv = 255 - img_crop
+            text = pytesseract.image_to_string(img_inv, lang='eng', config=tessdata_dir_config,
+                                               output_type=Output.DICT)
+            print("text", text)
+            num = get_digit(text['text'])
+            if len(num) > 0:
+                res = res + num + ' '
+            print("num", num)
+    print(res)
+    return res
 
 
 # image upload
@@ -157,32 +165,33 @@ def imageUpload(request):
         ext = format.split('/')[-1]
         print(ext)
         # result = detect_number(filepath)
-        if(ext=='JPG' or ext=='jpg' or ext=='png' or ext=='PNG' or ext=='jpeg' or ext=='JPEG'):
-            data = ContentFile(base64.b64decode(imgstr))  
-            file_name = str(millis) + '.' +ext
+        if (ext == 'JPG' or ext == 'jpg' or ext == 'png' or ext == 'PNG' or ext == 'jpeg' or ext == 'JPEG'):
+            data = ContentFile(base64.b64decode(imgstr))
+            file_name = str(millis) + '.' + ext
             filename = fs.save(file_name, data)
             uploaded_file_url = fs.url(filename)
             print(uploaded_file_url)
             filepath = 'static' + uploaded_file_url
             result = detect_text(filepath)
-            return JsonResponse({'status': 1, 'data':result})
+            return JsonResponse({'status': 1, 'data': result})
         else:
-            return JsonResponse({'status': 0, 'data':'Invalid image. allowed jpg or png'})
-        
+            return JsonResponse({'status': 0, 'data': 'Invalid image. allowed jpg or png'})
+
     if request.method == 'POST' and request.FILES['file']:
         myfile = request.FILES['file']
         ext = myfile.name.split('.')[-1]
         print(ext)
-        if(ext=='JPG' or ext=='jpg' or ext=='png' or ext=='PNG' or ext=='jpeg' or ext=='JPEG'):
-            filename = fs.save(str(millis)+'.'+ext, myfile)
+        if (ext == 'JPG' or ext == 'jpg' or ext == 'png' or ext == 'PNG' or ext == 'jpeg' or ext == 'JPEG'):
+            filename = fs.save(str(millis) + '.' + ext, myfile)
             uploaded_file_url = fs.url(filename)
             filepath = 'static' + uploaded_file_url
             result = detect_number(filepath)
             # result = detect_text(filepath)
-            return JsonResponse({'status': 1, 'data':result})
+            return JsonResponse({'status': 1, 'data': result})
         else:
-            return JsonResponse({'status': 0, 'data':'Invalid image. allowed jpg or png'})
-    return JsonResponse({'status':0, 'data':'invalid'})
+            return JsonResponse({'status': 0, 'data': 'Invalid image. allowed jpg or png'})
+    return JsonResponse({'status': 0, 'data': 'invalid'})
+
 
 # detect string from image (main engine)
 def detect_text(imagepath):
@@ -214,7 +223,7 @@ def detect_text(imagepath):
     line_avg_h = 0
     for i in range(n_boxes):
         (x, y, w, h) = (d['left'][i], d['top'][i], d['width'][i], d['height'][i])
-        #if 3 * h > h_img:
+        # if 3 * h > h_img:
         #	continue
 
         font = cv2.FONT_HERSHEY_SIMPLEX
@@ -227,7 +236,7 @@ def detect_text(imagepath):
             line_avg_h = line_avg_h + h
             continue
 
-        if int(d['conf'][i]) < 10 :
+        if int(d['conf'][i]) < 10:
             continue
 
         word_x.append(x)
@@ -238,7 +247,7 @@ def detect_text(imagepath):
 
         # get the output for file
         txt_word = "{0}".format(d['text'][i])
-        txt_rect = "{0},{1},{2},{3}".format(x, y, x+w, y+h)
+        txt_rect = "{0},{1},{2},{3}".format(x, y, x + w, y + h)
         txt_type = "text"
         txt = {'text': txt_word, 'type': txt_type, 'boundingBox': txt_rect}
         array_result.append(txt)
@@ -269,16 +278,15 @@ def detect_text(imagepath):
         figure_y.append(y)
         figure_w.append(w)
         figure_h.append(h)
-        crop_img = img_org[y:y+h, x:x+w]
+        crop_img = img_org[y:y + h, x:x + w]
         img_string = 'data:image/jpeg;base64,' + base64.b64encode(cv2.imencode('.png', crop_img)[1]).decode()
-        txt_rect = "{0},{1},{2},{3}".format(x, y, x+w, y+h)
+        txt_rect = "{0},{1},{2},{3}".format(x, y, x + w, y + h)
         txt_type = "figure"
         txt = {'img': img_string, 'type': txt_type, 'boundingBox': txt_rect}
         array_result.append(txt)
         cv2.rectangle(img_org, (x, y), (x + w, y + h), (0, 255, 0), 2)
-    
-    return array_result
 
+    return array_result
 
     # cv2.imshow('img contours', img_org)
     # cv2.waitKey(0)
