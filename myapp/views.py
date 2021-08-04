@@ -11,9 +11,23 @@ from imutils.object_detection import non_max_suppression
 import pytesseract
 from pytesseract import Output
 from django.utils import timezone
+import mysql.connector
+
+mydb = mysql.connector.connect(
+  host="localhost",
+  user="fruitlog_db",
+  password="dZYSPCaTW2c03qUg",
+  database="fruitlog_db"
+)
 
 pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
 tessdata_dir_config = r'--oem 1 --psm 6 --tessdata-dir "exam/"'
+
+# pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
+#
+# tessdata_dir_config = r'--oem 1 --psm 6 --tessdata-dir "exam\\"'
+
+
 import json
 
 
@@ -159,6 +173,16 @@ def detect_number(filepath):
     print(res)
     now1 = timezone.now()
     print("end", now1)
+
+    mycursor = mydb.cursor()
+    sql = "INSERT INTO Numbers (name, data) VALUES (%s, %s)"
+    val = [
+        ('test', res),
+    ]
+
+    mycursor.executemany(sql, val)
+
+    mydb.commit()
     return res
 
 
