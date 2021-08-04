@@ -10,6 +10,7 @@ import numpy as np
 from imutils.object_detection import non_max_suppression
 import pytesseract
 from pytesseract import Output
+from django.utils import timezone
 
 pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
 tessdata_dir_config = r'--oem 1 --psm 6 --tessdata-dir "exam/"'
@@ -37,6 +38,7 @@ def getData(request):
     st_time = int(round(time.time() * 1000))
     filepath = request.POST.get('path')
     filepath = filepath[1:]
+    print()
     result = detect_number(filepath)
     # result = ''
     # result = detect_text(filepath)
@@ -156,6 +158,8 @@ def detect_number(filepath):
 
 # image upload
 def imageUpload(request):
+    now1 = timezone.now()
+    print("start", now1)
     millis = int(round(time.time() * 1000))
     fs = FileSystemStorage()
     if request.method == 'POST' and request.POST.get('base_image'):
@@ -190,6 +194,9 @@ def imageUpload(request):
             return JsonResponse({'status': 1, 'data': result})
         else:
             return JsonResponse({'status': 0, 'data': 'Invalid image. allowed jpg or png'})
+
+    now2 = timezone.now()
+    print("end", now2)
     return JsonResponse({'status': 0, 'data': 'invalid'})
 
 
