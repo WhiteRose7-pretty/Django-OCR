@@ -74,6 +74,8 @@ def get_digit(text):
 
 # image dection function
 def detect_number(filepath):
+    now1 = timezone.now()
+    print("start", now1)
     image = cv2.imread(filepath)
     if image is None:
         return 'Invalid iamge'
@@ -153,13 +155,14 @@ def detect_number(filepath):
                 res = res + num + ' '
             print("num", num)
     print(res)
+    now1 = timezone.now()
+    print("start", now1)
     return res
 
 
 # image upload
 def imageUpload(request):
-    now1 = timezone.now()
-    print("start", now1)
+
     millis = int(round(time.time() * 1000))
     fs = FileSystemStorage()
     if request.method == 'POST' and request.POST.get('base_image'):
@@ -195,8 +198,7 @@ def imageUpload(request):
         else:
             return JsonResponse({'status': 0, 'data': 'Invalid image. allowed jpg or png'})
 
-    now2 = timezone.now()
-    print("end", now2)
+
     return JsonResponse({'status': 0, 'data': 'invalid'})
 
 
