@@ -175,9 +175,9 @@ def detect_number(filepath):
     print("end", now1)
 
     mycursor = mydb.cursor()
-    sql = "INSERT INTO Numbers (name, data) VALUES (%s, %s)"
+    sql = "INSERT INTO ocr_data (name, data) VALUES (%s, %s)"
     val = [
-        ('test', res),
+        (filepath, res),
     ]
 
     mycursor.executemany(sql, val)
