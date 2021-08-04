@@ -149,14 +149,12 @@ def detect_number(filepath):
             img_inv = 255 - img_crop
             text = pytesseract.image_to_string(img_inv, lang='eng', config=tessdata_dir_config,
                                                output_type=Output.DICT)
-            print("text", text)
             num = get_digit(text['text'])
             if len(num) > 0:
                 res = res + num + ' '
-            print("num", num)
     print(res)
-    now1 = timezone.now()
-    print("start", now1)
+    now2 = timezone.now()
+    print("end", now2)
     return res
 
 
