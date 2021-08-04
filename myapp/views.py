@@ -12,7 +12,7 @@ import pytesseract
 from pytesseract import Output
 
 pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
-tessdata_dir_config = r'--oem 1 --psm 6 --tessdata-dir "exam\\"'
+tessdata_dir_config = r'--oem 1 --psm 6 --tessdata-dir "exam/"'
 import json
 
 
