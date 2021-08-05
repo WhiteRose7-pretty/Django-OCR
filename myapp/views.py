@@ -10,9 +10,8 @@ from .mysql import mydb
 
 def detect_number_save(filepath):
     res = detect_number(filepath)
-    print("detected;", res)
     mycursor = mydb.cursor()
-    sql = "INSERT INTO numbers (name, data) VALUES (%s, %s)"
+    sql = "INSERT INTO ocr_data (name, data) VALUES (%s, %s)"
     val = [
         (filepath, res),
     ]
