@@ -65,8 +65,29 @@ def img_concatenate(img1, img2):
     return img
 
 
-def rgb_bin(img):
+def rgb_bin(img, clr):
     h_im, w_im = img.shape[:2]
+    blue, green, red = cv2.split(img)
+    # img_new = blue | green | red
+    # show_img(blue, False)
+    # show_img(green, False)
+    # show_img(red, False)
+    # show_img(img_new, False)
+    if clr == 0:
+        # img_bin = cv2.threshold(red, 50, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+        return 255 - red
+    if clr == 1:
+        # img_bin = cv2.threshold(green, 50, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+        return 255 - green
+    elif clr == 2:
+        # img_bin = cv2.threshold(blue, 50, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+        return 255 - blue
+
+    # show_img(img_bin, False)
+    return blue | green | red
+    # show_img(green, False)
+    # show_img(red, False)
+
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     for i in range(h_im):
         for j in range(w_im):
@@ -106,17 +127,68 @@ def rgb_bin(img):
     # return img_bin
 
 
-kernel0 = np.ones((5, 5), np.uint8)
-
-
 def proc_ocr(img):
     info_text = pytesseract.image_to_string(img, lang='eng', config=tessdata_dir_config, output_type=Output.DICT)
     res_txt = info_text['text']
-    # print(res_txt)
+    # print('tess result : ' + res_txt)
 
     num = get_digit(res_txt)
+    # print('extrated num : ' + num)
     return num
 
+def ocr_colr(img_one):
+    # img_bin = rgb_bin(img_one, 0)
+    blue, green, red = cv2.split(img_one)
+    num = proc_ocr(red)
+    # show_img(red, False)
+    if len(num) == 0:
+        # img_bin = rgb_bin(img_one, 1)
+        num = proc_ocr(green)
+        # show_img(green, False)
+        if len(num) == 0:
+            # img_bin = rgb_bin(img_one, 2)
+            num = proc_ocr(blue)
+            # show_img(blue, False)
+
+    if len(num) == 0:
+        img_bin = cv2.threshold(red, 50, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+        num = proc_ocr(img_bin)
+        # show_img(img_bin, False)
+        if len(num) == 0:
+            img_bin = cv2.threshold(green, 50, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+            num = proc_ocr(img_bin)
+            if len(num) == 0:
+                img_bin = cv2.threshold(blue, 50, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+                num = proc_ocr(img_bin)
+
+    # show_img(img_bin, False)
+    return num
+
+def ocr_one(img_one):
+    h, w = img_one.shape[:2]
+    img_inv = 255 - img_one
+    num = proc_ocr(img_inv)
+    # show_img(img_one, False)
+    if len(num) == 0:
+        img_re = cv2.resize(img_inv, (3*w, 3*h))
+        num = proc_ocr(img_re)
+        # show_img(img_re, False)
+
+        if len(num) == 0:
+            # img_bin = rgb_bin(img_one)
+            # show_img(img_bin, False)
+            # img_re = cv2.resize(img_inv, (6*w, 6*h))
+            num = ocr_colr(img_re)
+            if len(num) == 0:
+                img_re = cv2.resize(img_inv, (6*w, 6*h))
+                # num = proc_ocr(img_re)
+                # show_img(img_re, False)
+                num = ocr_colr(img_re)
+
+                # img_crop = cv2.cvtColor(img_crop, cv2.COLOR_BGR2GRAY)
+                # img_bin = cv2.threshold(img_crop, 10, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+                # img_bin = cv2.resize(img_bin, (w * 2, h * 2))
+    return num
 
 def create_img_dot(img_in):
     img = img_in.copy()
@@ -129,10 +201,10 @@ def create_img_dot(img_in):
     cv2.rectangle(img, (xx, yy), (7 * x, 3 * y), (0, 0, 0), -1)
     cv2.rectangle(img, (xx, 5 * y), (7 * x, 6 * y), (0, 0, 0), -1)
 
-    show_img(img, False)
+    # show_img(img, False)
     return img
 
-
+kernel0 = np.ones((5, 5), np.uint8)
 def detect_number(filepath):
     image = cv2.imread(filepath)
     if image is None:
@@ -161,15 +233,28 @@ def detect_number(filepath):
 
     # get the candinate regions of text line.
     rois = []
-    for c in contours:
+    # for (c, hier) in (contours, hierarchy):
+    # for component in zip(contours, hierarchy):
+    #     c = component[0]
+    #     hier = component[1]
+    for i in range(0, len(contours)):
+        c = contours[i]
+        hier = hierarchy[0][i]
         x, y, w, h = cv2.boundingRect(c)
         if w < 30 or h < 30:
             continue
         if w > 80 or h > 80:
             continue
+        if hier[3] < 0:
+            continue
+
+        # print(f"TREE: {hier}")
+        # cv2.rectangle(gray_re, (x, y), (x + w, y + h), (255, 255, 255), 2)
+        # img_draw = gray_re.copy()
+        # cv2.rectangle(img_draw, (x, y), (x + w, y + h), (255, 255, 255), 2)
+        # show_img(img_draw, False)
 
         rois.append((x, y, w, h))
-        # cv2.rectangle(gray_re, (x, y), (x + w, y + h), (255, 255, 255), 2)
 
         # if w > 54 and w < 68 and h > 54 and h < 68:
         # if w > 45 and w < 75 and h > 35 and h < 75:
@@ -180,8 +265,7 @@ def detect_number(filepath):
         # if w > 30 and w < 110 and h > 10 and h < 30:
         #     rect_roi.append((x, y, w, h))
         #     cv2.rectangle(gray, (x, y), (x + w, y + h), (192, 192, 192), 2)
-    # cv2.imshow('img_gray', gray_re)
-    # cv2.waitKey(0)
+    # show_img(gray_re, False)
 
     # rois = sorted(rois, key=sort_y)
     # for i in range(0, len(rois)):
@@ -210,8 +294,7 @@ def detect_number(filepath):
         if bOverlap == False:
             rect_roi.append((xi, yi, wi, hi))
             # cv2.rectangle(gray_re, (xi, yi), (xi + wi, yi + hi), (255, 255, 255), 2)
-        # cv2.imshow('img_gray', gray_re)
-        # cv2.waitKey(0)
+            # show_img(gray_re, False)
     # === }} remove the overlap rectangls
 
     # === {{ get the rects in same line
@@ -222,7 +305,7 @@ def detect_number(filepath):
         if bover[i]:
             continue
         (xi, yi, wi, hi) = rect_roi[i]
-        cv2.rectangle(gray_re, (xi, yi), (xi + wi, yi + hi), (255, 255, 255), 2)
+        # cv2.rectangle(gray_re, (xi, yi), (xi + wi, yi + hi), (255, 255, 255), 2)
         line = []
         line.append((xi, yi, wi, hi))
         roi_check = []
@@ -238,7 +321,7 @@ def detect_number(filepath):
                 (xi, yi, wi, hi) = (xj, yj, wj, hj)
                 # bover[j] = True
                 roi_check.append(j)
-                cv2.rectangle(gray_re, (xj, yj), (xj + wj, yj + hj), (255, 255, 255), 2)
+                # cv2.rectangle(gray_re, (xj, yj), (xj + wj, yj + hj), (255, 255, 255), 2)
         if len(line) > 8:
             print('line number : ' + str(len(line)))
             # print('first rect : ' + str(line[0]))
@@ -251,8 +334,7 @@ def detect_number(filepath):
     # === }} get the rects in same line
 
     # gray_re = 255 - gray_re
-    # cv2.imshow('img_crop', gray_re)
-    # cv2.waitKey(0)
+    # show_img(gray_re)
 
     # print('line number : ' + str(len(lines)))
     lines = sorted(lines, key=sort_line)
@@ -265,43 +347,24 @@ def detect_number(filepath):
             (x, y, w, h) = line[len_rts - j - 1]
             # img_crop = gray_re[y+2:y+h-4, x+2:x+w-4]
             img_crop = img_re[y:y + h, x:x + w]
-            # show_img(img_crop, False)
-
+            num = ocr_one(img_crop)
             # cv2.imwrite(dir_name + filename, img_crop)
-
-            img_bin = rgb_bin(img_crop)
-            # img_bin = cv2.threshold(img_crop, 10, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
-            img_bin = cv2.resize(img_bin, (w * 2, h * 2))
-            # show_img(img_bin, False)
 
             # img_dot = create_img_dot(img_bin)
             # # img_inv = 255 - img_crop
-            # # cv2.imshow('img_crop', img_crop)
-            # # cv2.waitKey(0)
+            # show_img(img_crop, False)
             # if img_line is None:
             #     img_line = img_bin.copy()
             # else:
             #     img_line = img_concatenate(img_line, img_bin)
             # img_line = img_concatenate(img_line, img_dot)
-
-            num = proc_ocr(img_bin)
+            # num = proc_ocr(img_bin)
             # print(num)
+
             if len(num) > 0:
                 res = res + num + ' '
-                # print(num)
             else:
-                # show_img(img_bin, False)
-                img_crop = cv2.cvtColor(img_crop, cv2.COLOR_BGR2GRAY)
-                img_bin = cv2.threshold(img_crop, 10, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
-                img_bin = cv2.resize(img_bin, (w * 2, h * 2))
-                # show_img(img_bin, False)
-                num = proc_ocr(img_bin)
-                print(num)
-                if len(num) > 0:
-                    res = res + num + ' '
-                else:
-                    res = res + 'X' + ' '
-                    print('X')
+                res = res + 'X' + ' '
 
             #     img_bin = cv2.resize(img_bin, (w * 4, h * 4))
             #     # im_bin = im_bin[5:h-5, 10:w-10]
@@ -313,8 +376,7 @@ def detect_number(filepath):
             #         print(num)
 
         # if img_line is not None:
-        #     cv2.imshow('img_line', img_line)
-        #     cv2.waitKey(0)
+        #       show_img(img_line, False)
         #     num = proc_ocr(img_line)
 
     print(res)
