@@ -6,10 +6,10 @@ import base64
 import time
 from .ocr_img import detect_number
 from django.conf import settings
+from .mysql import mydb
 
 
 def detect_number_save(filepath):
-    mydb = settings.DATABASES_MYSQL
     res = detect_number(filepath)
     mycursor = mydb.cursor()
     sql = "INSERT INTO ocr_data (name, data) VALUES (%s, %s)"
@@ -18,6 +18,7 @@ def detect_number_save(filepath):
     ]
     mycursor.executemany(sql, val)
     mydb.commit()
+    mycursor.close()
     return res
 
 
