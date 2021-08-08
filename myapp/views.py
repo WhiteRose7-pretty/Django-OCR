@@ -5,10 +5,11 @@ from django.core.files.base import ContentFile
 import base64
 import time
 from .ocr_img import detect_number
-from .mysql import mydb
+from django.conf import settings
 
 
 def detect_number_save(filepath):
+    mydb = settings.DATABASES_MYSQL
     res = detect_number(filepath)
     mycursor = mydb.cursor()
     sql = "INSERT INTO ocr_data (name, data) VALUES (%s, %s)"
