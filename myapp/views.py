@@ -24,7 +24,7 @@ def detect_number_save(filepath):
 
 def get_latest_data():
     mycursor = mydb.cursor()
-    sql = "SELECT * FROM numbers ORDER BY id DESC LIMIT 1"
+    sql = "SELECT * FROM ocr_data ORDER BY id DESC LIMIT 1"
     mycursor.execute(sql)
     result = mycursor.fetchone()
     if result:
@@ -41,7 +41,7 @@ def index(request):
     context = {
         'data': data
     }
-    return render(request, "index.html", {})
+    return render(request, "index.html", context)
 
 
 def update_data(request):
