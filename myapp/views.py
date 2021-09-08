@@ -28,13 +28,14 @@ def get_latest_data():
     mycursor.execute(sql)
     result = mycursor.fetchone()
     if result:
-        print(result)
         data = result[2]
+        id = result[0]
         temp = data.split(' : ')
     else:
         temp = ''
+        id = ''
     mycursor.close()
-    return temp
+    return temp, id
 
 
 def index(request):
@@ -42,8 +43,12 @@ def index(request):
 
 
 def update_data(request):
-    data = get_latest_data()
-    return JsonResponse(data, safe=False)
+    data, id = get_latest_data()
+    data = {
+        'data':data,
+        "id":id
+    }
+    return JsonResponse(data,  safe=False)
 
 
 def detection(request):

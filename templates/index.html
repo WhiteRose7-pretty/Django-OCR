@@ -58,6 +58,7 @@
             processData: false,
             success: function (data, status) {
                 console.log(data);
+                data = data.data
                 var html = '';
                 data.forEach((item , index) => {
                     console.log(item);
