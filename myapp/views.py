@@ -6,10 +6,17 @@ import base64
 import time
 from .ocr_img import detect_number
 from django.conf import settings
-from .mysql import mydb
+# from .mysql import mydb
+import mysql.connector
 
 
 def detect_number_save(filepath):
+    mydb = mysql.connector.connect(
+        host="localhost",
+        user="fruitlog_db",
+        password="dZYSPCaTW2c03qUg",
+        database="fruitlog_db"
+    )
     res = detect_number(filepath)
     mycursor = mydb.cursor()
     sql = "INSERT INTO ocr_data (name, data) VALUES (%s, %s)"
@@ -23,8 +30,14 @@ def detect_number_save(filepath):
 
 
 def get_latest_data():
+    mydb = mysql.connector.connect(
+        host="localhost",
+        user="fruitlog_db",
+        password="dZYSPCaTW2c03qUg",
+        database="fruitlog_db"
+    )
     mycursor = mydb.cursor()
-    sql = "SELECT * FROM ocr_data ORDER BY id DESC LIMIT 1"
+    sql = "SELECT * FROM ocr_data ORDER BY id DESC LIMIT 1;"
     mycursor.execute(sql)
     result = mycursor.fetchone()
     if result:
@@ -35,6 +48,8 @@ def get_latest_data():
         temp = ''
         id = ''
     mycursor.close()
+    mydb.close()
+
     return temp, id
 
 
