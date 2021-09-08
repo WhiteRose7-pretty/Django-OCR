@@ -22,8 +22,31 @@ def detect_number_save(filepath):
     return res
 
 
+def get_latest_data():
+    mycursor = mydb.cursor()
+    sql = "SELECT * FROM numbers ORDER BY id DESC LIMIT 1"
+    mycursor.execute(sql)
+    result = mycursor.fetchone()
+    if result:
+        print(result)
+        data = result[2]
+        temp = data.split(' : ')
+        print(temp)
+    mycursor.close()
+    return temp
+
+
 def index(request):
+    data = get_latest_data()
+    context = {
+        'data': data
+    }
     return render(request, "index.html", {})
+
+
+def update_data(request):
+    data = get_latest_data()
+    return JsonResponse(data, safe=False)
 
 
 def detection(request):
