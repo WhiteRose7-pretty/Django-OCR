@@ -31,17 +31,14 @@ def get_latest_data():
         print(result)
         data = result[2]
         temp = data.split(' : ')
-        print(temp)
+    else:
+        temp = ''
     mycursor.close()
     return temp
 
 
 def index(request):
-    data = get_latest_data()
-    context = {
-        'data': data
-    }
-    return render(request, "index.html", context)
+    return render(request, "index.html")
 
 
 def update_data(request):
